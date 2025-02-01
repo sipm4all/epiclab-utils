@@ -7,3 +7,7 @@ add_executable(rwavedump rwavedump.cc)
 target_link_libraries(rwavedump ${Boost_LIBRARIES} ${ROOT_LIBS} ${CAEN_LIBRARIES})
 install(TARGETS rwavedump RUNTIME DESTINATION bin)
 
+add_executable(rwaveserver rwaveserver.cc rwavelib.cc)
+target_link_libraries(rwaveserver ${Boost_LIBRARIES} ${CAEN_LIBRARIES})
+install(TARGETS rwaveserver RUNTIME DESTINATION bin)
+

@@ -56,7 +56,14 @@ int main() {
     error("socket creation failed");
     return 1;
   }
-  
+
+  /** set socket options to allow immediate address reuse **/
+  int opt = 1;
+  if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt))) {
+    error("socket options failed");
+    return 1;
+  }
+
   /** configure server address structure **/
   address.sin_family = AF_INET;
   address.sin_addr.s_addr = INADDR_ANY;

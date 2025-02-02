@@ -386,6 +386,12 @@ process_command(int client_fd, const std::string &str)
       message(client_fd, mystring);
       return;
     }
+    if (CAEN_DGTZ_LoadDRS4CorrectionData(DGZ.handle, dgz::frequencies[frequency])) {
+      mystring = "[ERROR] CAEN_DGTZ_LoadDRS4CorrectionData";
+      message(client_fd, mystring);
+      return;
+    }
+
     DGZ.opt.frequency = frequency;
     mystring = "sampling frequency configured: " + astr;
     message(client_fd, mystring);

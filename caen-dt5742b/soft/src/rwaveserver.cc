@@ -398,6 +398,47 @@ process_command(int client_fd, const std::string &str)
     return;      
   }
   
+  /** maxblt [events] **/
+  if (str.find("maxblt") == 0) {
+    if (dgz::acquisition_status(DGZ)) {
+      mystring = "cannot change configuration, acquisition is running";
+      message(client_fd, mystring);
+      return;
+    }
+    // Step 2: Split the string into words
+    std::stringstream ss(str);
+    std::string word;
+    std::vector<std::string> words;
+    while (ss >> word) words.push_back(word);
+    if (words.size() != 2) {
+      mystring = "[ERROR] \'maxblt\' command requires one argument: \'events\'";
+      message(client_fd, mystring);
+      return;
+    }
+    const std::string& astr = words[1];
+    if (!is_valid_int(astr)) {
+      mystring = "[ERROR] invalid \'maxblt\' argument, not a valid integer: " + astr;
+      message(client_fd, mystring);
+      return;
+    }
+    int events = std::stoi(astr);
+    if (events < 1 || events > 1024) {
+      mystring = " [ERROR] invalid \'maxblt\' argument, not a valid value [1-1024]: " + astr;
+      message(client_fd, mystring);
+      return;
+    }
+    if (CAEN_DGTZ_SetMaxNumEventsBLT(DGZ.handle, events)) {
+      mystring = "[ERROR] CAEN_DGTZ_SetMaxNumEventsBLT";
+      message(client_fd, mystring);
+      return;
+    }
+
+    DGZ.opt.max_blt = events;
+    mystring = "maximum number events BLT configured: " + astr;
+    message(client_fd, mystring);
+    return;      
+  }
+  
   /**
    ** grmask [mask] -- configure group mask
    **/

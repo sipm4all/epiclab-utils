@@ -479,7 +479,7 @@ process_command(int client_fd, const std::string &str)
       message(client_fd, mystring);
       return;
     }
-    if (mask < 0 || mask > 0xff) {
+    if (mask < 0 || mask > 0xffff) {
       mystring = "[ERROR] invalid \'chmask\' argument, not a valid value [0-65535]: " + astr;
       message(client_fd, mystring);
       return;
@@ -507,7 +507,7 @@ fill_buffer(dgz::digitizer_t &dgz)
     for (int ich = 0; ich < 8; ++ich) {
       if (!(mask & 1 << ich)) continue;
       auto size = dgz.event->DataGroup[igr].ChSize[ich];
-      uint8_t ch = ich + igr * 9;
+      uint8_t ch = ich + igr * 8;
       data::has_channel[ch] = true;
       for (int i = 0; i < size; ++i)
 	data::buffer[data::buffer_size + i] = dgz.event->DataGroup[igr].DataChannel[ich][i];

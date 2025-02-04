@@ -21,8 +21,10 @@ struct options_t {
   int trigger_dc = 32768;
   int trigger_thr = 20934;
   int trigger_sw = 0;
+  int trigger_sw_usleep = 1000;
   /** readout **/
   int nevents = 1;
+  int readout_msleep = 1;
   int readout_timeout = 1000;
   int channel_mask = 0xFFFF;
 };
@@ -47,6 +49,7 @@ bool stop(digitizer_t &dgz);
 bool test_bit(digitizer_t &dgz, uint32_t address, int bit);
 #define acquisition_status(dgz) test_bit(dgz, CAEN_DGTZ_ACQ_STATUS_ADD, 2)
 #define event_ready(dgz) test_bit(dgz, CAEN_DGTZ_ACQ_STATUS_ADD, 3)
+#define event_full(dgz) test_bit(dgz, CAEN_DGTZ_ACQ_STATUS_ADD, 4)
 #define board_ready(dgz) test_bit(dgz, CAEN_DGTZ_ACQ_STATUS_ADD, 8)
 
 extern std::map<int, CAEN_DGTZ_DRS4Frequency_t> frequencies;

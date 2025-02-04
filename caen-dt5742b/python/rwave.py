@@ -66,19 +66,37 @@ class rwaveclient:
 
         
     def download(self):
-        ### receive header
-        raw_data = self.socket.recv(8)
-        if len(raw_data) < 8:
-            raise ValueError('received less than the expected 8 bytes')
+        ### receive header (4 * uint16_t)
+        data_size = 4 * 2
+        raw_data = self.socket.recv(data_size)
+        if len(raw_data) < data_size:
+            raise ValueError('received less than the expected {data_size} bytes')
         header = struct.unpack('<HHHH', raw_data)
         n_events, n_channels, record_length, frequency = header
         self.__print_msg__(f'received header: {n_events} events, {n_channels} channels, {record_length} record length, {frequency} MHz sampling')
-        ### receive channels
-        raw_data = self.socket.recv(n_channels)
-        if len(raw_data) < n_channels:
-            raise ValueError('received less than the expected {n_channels} bytes')
+        ### receive channels (n_channels * uint8_t)
+        data_size = n_channels
+        raw_data = self.socket.recv(data_size)
+        if len(raw_data) < data_size:
+            raise ValueError('received less than the expected {data_size} bytes')
         channels = struct.unpack('<' + n_channels * 'B', raw_data)
         self.__print_msg__(f'received channels: {channels}')
+        ### receive trigger tags (n_events * 2 * uint32_t)
+        data_size = n_events * 2 * 4
+        raw_data = self.socket.recv(data_size)
+        if len(raw_data) < data_size:
+            raise ValueError('received less than the expected {data_size} bytes')
+        trigger_tags = struct.unpack('<' + n_events * 2 * 'I', raw_data)
+        trigger_tags = tuple(zip(trigger_tags[::2], trigger_tags[1::2]))
+        self.__print_msg__(f'received trigger tags: {data_size} bytes')
+        ### receive first cell indices (n_events * 2 * uint16_t)
+        data_size = n_events * 2 * 2
+        raw_data = self.socket.recv(data_size)
+        if len(raw_data) < data_size:
+            raise ValueError('received less than the expected {data_size} bytes')
+        first_cells = struct.unpack('<' + n_events * 2 * 'H', raw_data)
+        first_cells = tuple(zip(first_cells[::2], first_cells[1::2]))
+        self.__print_msg__(f'received first_cells: {data_size} bytes')
         ### receive data
         waveform_size = record_length * 4
         event_size = n_channels * waveform_size
@@ -99,10 +117,12 @@ class rwaveclient:
         for event in range(n_events):
             event_data = {}
             for channel in channels:
+                event_data[channel] = {}
                 unpacked = waveform_struct.unpack(raw_data[index:index + waveform_size])
                 index += waveform_size
                 waveform_data = np.array(unpacked, dtype = float)
-                event_data[channel] = waveform_data
+                event_data[channel]['waveform'] = waveform_data
+                event_data[channel]['trigger_tag'] = trigger_tags[event][channel // 8]
+                event_data[channel]['first_cell'] = first_cells[event][channel // 8]
             data.append(event_data)
         return data
-

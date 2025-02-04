@@ -7,7 +7,8 @@
 namespace data {
 
 const int max_events = 1024;
-const int max_channels = 18;
+const int max_groups = 2;
+const int max_channels = 8;
 const int max_length = 1024;
   
 struct header_t {
@@ -17,11 +18,14 @@ struct header_t {
   uint16_t frequency;
 } header;
 
-uint8_t channels[max_channels];
-bool has_channel[max_channels];
+uint32_t trigger_tags[max_events][max_groups];
+uint16_t start_cells[max_events][max_groups];
+  
+uint8_t channels[max_groups * max_channels];
+bool has_channel[max_groups * max_channels];
    
 int buffer_size;
-float buffer[max_events * max_channels * max_length];
+float buffer[max_events * max_groups * max_channels * max_length];
 
 
 }

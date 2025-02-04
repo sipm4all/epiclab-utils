@@ -57,19 +57,24 @@ config(digitizer_t &dgz)
   std::cout << " --- set DRS4 sampling frequency: " << opt.frequency << " MHz " << std::endl;
   if (CAEN_DGTZ_SetDRS4SamplingFrequency(handle, frequencies[opt.frequency]))  error("CAEN_DGTZ_SetDRS4SamplingFrequency");
 
-  if (CAEN_DGTZ_SetFastTriggerDigitizing(handle, CAEN_DGTZ_ENABLE))            error("CAEN_DGTZ_SetFastTriggerDigitizing");
+  //  if (CAEN_DGTZ_SetFastTriggerDigitizing(handle, CAEN_DGTZ_ENABLE))            error("CAEN_DGTZ_SetFastTriggerDigitizing");
+  //  if (CAEN_DGTZ_SetFastTriggerDigitizing(handle, CAEN_DGTZ_DISABLE))           error("CAEN_DGTZ_SetFastTriggerDigitizing");
   //  if (CAEN_DGTZ_SetFastTriggerMode(handle, CAEN_DGTZ_TRGMODE_ACQ_ONLY))        error("CAEN_DGTZ_SetFastTriggerMode");
-  if (CAEN_DGTZ_SetFastTriggerMode(handle, CAEN_DGTZ_TRGMODE_DISABLED))        error("CAEN_DGTZ_SetFastTriggerMode");
-  if (CAEN_DGTZ_SetExtTriggerInputMode(handle, CAEN_DGTZ_TRGMODE_DISABLED))    error("CAEN_DGTZ_SetExtTriggerInputMode");
-  if (CAEN_DGTZ_SetTriggerPolarity(handle, 0, CAEN_DGTZ_TriggerOnRisingEdge))  error("CAEN_DGTZ_SetTriggerPolarity 0");
-  if (CAEN_DGTZ_SetGroupFastTriggerDCOffset(handle, 0, opt.trigger_dc))        error("CAEN_DGTZ_SetGroupFastTriggerDCOffset 0");
-  if (CAEN_DGTZ_SetGroupFastTriggerThreshold(handle, 0, opt.trigger_thr))      error("CAEN_DGTZ_SetGroupFastTriggerThreshold 0");
-  if (CAEN_DGTZ_SetTriggerPolarity(handle, 1, CAEN_DGTZ_TriggerOnRisingEdge))  error("CAEN_DGTZ_SetTriggerPolarity 1");
-  if (CAEN_DGTZ_SetGroupFastTriggerDCOffset(handle, 1, opt.trigger_dc))        error("CAEN_DGTZ_SetGroupFastTriggerDCOffset 1");  
-  if (CAEN_DGTZ_SetGroupFastTriggerThreshold(handle, 1, opt.trigger_thr))      error("CAEN_DGTZ_SetGroupFastTriggerThreshold 0");
+  //  if (CAEN_DGTZ_SetFastTriggerMode(handle, CAEN_DGTZ_TRGMODE_DISABLED))        error("CAEN_DGTZ_SetFastTriggerMode");
+
+  //  if (CAEN_DGTZ_SetExtTriggerInputMode(handle, CAEN_DGTZ_TRGMODE_DISABLED))    error("CAEN_DGTZ_SetExtTriggerInputMode");
+  if (CAEN_DGTZ_SetExtTriggerInputMode(handle, CAEN_DGTZ_TRGMODE_ACQ_ONLY))    error("CAEN_DGTZ_SetExtTriggerInputMode");
+  //  if (CAEN_DGTZ_SetTriggerPolarity(handle, 0, CAEN_DGTZ_TriggerOnRisingEdge))  error("CAEN_DGTZ_SetTriggerPolarity 0");
+
+  //  if (CAEN_DGTZ_SetGroupFastTriggerDCOffset(handle, 0, opt.trigger_dc))        error("CAEN_DGTZ_SetGroupFastTriggerDCOffset 0");
+  //  if (CAEN_DGTZ_SetGroupFastTriggerThreshold(handle, 0, opt.trigger_thr))      error("CAEN_DGTZ_SetGroupFastTriggerThreshold 0");
+  //  if (CAEN_DGTZ_SetTriggerPolarity(handle, 1, CAEN_DGTZ_TriggerOnRisingEdge))  error("CAEN_DGTZ_SetTriggerPolarity 1");
+  //  if (CAEN_DGTZ_SetGroupFastTriggerDCOffset(handle, 1, opt.trigger_dc))        error("CAEN_DGTZ_SetGroupFastTriggerDCOffset 1");  
+  //  if (CAEN_DGTZ_SetGroupFastTriggerThreshold(handle, 1, opt.trigger_thr))      error("CAEN_DGTZ_SetGroupFastTriggerThreshold 0");
 
   /** enable busy signal on GPO **/
   if (CAEN_DGTZ_WriteRegister(handle, 0x811C, 0x000D0001))                     error("CAEN_DGTZ_WriteRegister");
+  if (CAEN_DGTZ_SetIOLevel(handle, CAEN_DGTZ_IOLevel_NIM))                     error("CAEN_DGTZ_SetIOLevel");
 
   msleep(300);
   

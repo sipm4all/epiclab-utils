@@ -39,7 +39,7 @@ void process_command(int client_fd, const std::string &str);
 bool is_valid_hex(const std::string& str);
 bool is_valid_int(const std::string& str);
 
-bool fill_buffer(dgz::digitizer_t &dgz);
+bool fill_buffer(dgz::digitizer_t &dgz, int event);
 
 int main() {
   struct sockaddr_in address;
@@ -248,6 +248,9 @@ process_command(int client_fd, const std::string &str)
 	message(client_fd, mystring);
 	return;
       }
+      //      if (itrg % 2 == 0) msleep(0.1);
+      //      else msleep(100);
+      //      usleep(100);
       msleep(1);
     }
 
@@ -317,7 +320,8 @@ process_command(int client_fd, const std::string &str)
 	message(client_fd, mystring);
 	return;
       }
-      fill_buffer(DGZ);
+      //      data::triggertags[iev] = event_info.TriggerTimeTag;
+      fill_buffer(DGZ, iev);
     }
     mystring = "readout completed: " + std::to_string(num_events) + " events";
     message(client_fd, mystring);
@@ -338,15 +342,21 @@ process_command(int client_fd, const std::string &str)
   if (str.find("download") == 0) {
     int header_size = sizeof(data::header);
     int channels_size = data::header.n_channels * sizeof(uint8_t);
+    int trigger_tags_size = data::header.n_events * sizeof(uint32_t) * 2;
+    int start_cells_size = data::header.n_events * sizeof(uint16_t) * 2;
     int data_size = data::buffer_size * sizeof(float);
-    mystring = "sending header,channels,data: " +
+    mystring = "sending header,channels,triggertags,startcells,data: " +
       std::to_string(header_size) + ","  +
       std::to_string(channels_size) + "," +
+      std::to_string(trigger_tags_size) + "," +
+      std::to_string(start_cells_size) + "," +
       std::to_string(data_size) + " bytes";
     message(client_fd, mystring);
-    
+
     send(client_fd, &data::header, header_size, 0);
     send(client_fd, &data::channels, channels_size, 0);    
+    send(client_fd, &data::trigger_tags, trigger_tags_size, 0);
+    send(client_fd, &data::start_cells, start_cells_size, 0);
     send(client_fd, data::buffer, data_size, 0);
 
     return;
@@ -531,18 +541,74 @@ process_command(int client_fd, const std::string &str)
     return;      
   }
   
+  /**
+   ** correction [status] -- enable/disable DRS4 correction
+   **/
+  
+  if (str.find("correction") == 0) {
+    if (dgz::acquisition_status(DGZ)) {
+      mystring = "cannot change configuration, acquisition is running";
+      message(client_fd, mystring);
+      return;
+    }
+    // Step 2: Split the string into words
+    std::stringstream ss(str);
+    std::string word;
+    std::vector<std::string> words;
+    while (ss >> word) words.push_back(word);
+    if (words.size() != 2) {
+      mystring = "[ERROR] \'correction\' command requires one argument: \'status\'";
+      message(client_fd, mystring);
+      return;
+    }
+    const std::string& astr = words[1];
+    if (astr == "on") {
+      if (CAEN_DGTZ_LoadDRS4CorrectionData(DGZ.handle, dgz::frequencies[DGZ.opt.frequency])) {
+	mystring = "[ERROR] CAEN_DGTZ_LoadDRS4CorrectionData";
+	message(client_fd, mystring);
+	return;
+      }
+      if (CAEN_DGTZ_EnableDRS4Correction(DGZ.handle)) {
+	mystring = "[ERROR] CAEN_DGTZ_EnableDRS4Correction";
+	message(client_fd, mystring);
+	return;
+      }
+      mystring = "DRS4 correction enabled";
+      message(client_fd, mystring);
+      return;      
+    }
+    else if (astr == "off") {
+      if (CAEN_DGTZ_DisableDRS4Correction(DGZ.handle)) {
+	mystring = "[ERROR] CAEN_DGTZ_DisableDRS4Correction";
+	message(client_fd, mystring);
+	return;
+      }
+      mystring = "DRS4 correction disabled";
+      message(client_fd, mystring);
+      return;      
+    }
+    else {
+      mystring = "[ERROR] invalid \'correction\' argument, not a valid value [on, off]: " + astr;
+      message(client_fd, mystring);
+      return;
+    }
+    
+  }
+  
   mystring = "[ERROR] unknown command: " + str;
   message(client_fd, mystring);
   return;
 }
 
 bool
-fill_buffer(dgz::digitizer_t &dgz)
+fill_buffer(dgz::digitizer_t &dgz, int event)
 {
   auto channel_mask = DGZ.opt.channel_mask;
   /** loop over groups **/
   for (int igr = 0; igr < 2; ++igr) {
     if (dgz.event->GrPresent[igr] == 0) continue;
+    data::trigger_tags[event][igr] = dgz.event->DataGroup[igr].TriggerTimeTag;
+    data::start_cells[event][igr] = dgz.event->DataGroup[igr].StartIndexCell;
     auto mask = channel_mask >> (8 * igr);
     /** loop over channels **/
     for (int ich = 0; ich < 8; ++ich) {

@@ -1,0 +1,6 @@
+#! /usr/bin/env bash
+
+for axis in 1 2; do
+    echo " --- axis ${axis} "
+    /eu/phymotion/cmd "SE${axis}.1?"
+done

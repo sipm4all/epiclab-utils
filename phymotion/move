@@ -1,0 +1,15 @@
+#! /usr/bin/env bash
+
+if [ "$#" -ne 2 ]; then
+    echo " usage: $0 [mm_x] [mm_y] "
+    exit 1
+fi
+x=$1
+y=$2
+
+echo " --- moving to: ${x} ${y} "
+/eu/phymotion/cmd "1.1A${x}"
+/eu/phymotion/cmd "2.1A${y}"
+/eu/phymotion/wait
+pos=$(/eu/phymotion/gpos)
+echo " --- moved to: ${pos} "

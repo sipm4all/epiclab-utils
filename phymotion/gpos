@@ -1,0 +1,6 @@
+#! /usr/bin/env bash
+
+x=$(/eu/phymotion/cmd "1.1P20R?" | sed -n "2 p")
+y=$(/eu/phymotion/cmd "2.1P20R?" | sed -n "2 p")
+
+echo "${x} ${y}"

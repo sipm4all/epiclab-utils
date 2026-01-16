@@ -1,0 +1,4 @@
+#! /usr/bin/env bash
+
+/eu/phymotion/move "0" "90"
+echo " --- initialised "

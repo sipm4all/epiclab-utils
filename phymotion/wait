@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+
+sleep 0.5
+for axis in 1 2; do
+    while /eu/phymotion/cmd "SE${axis}.1?" | grep running > /dev/null; do
+	sleep 0.5
+    done
+done

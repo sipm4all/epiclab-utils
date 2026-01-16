@@ -1,0 +1,9 @@
+#! /usr/bin/env bash
+
+echo " --- homing "
+for axis in 1 2; do
+    /eu/phymotion/cmd "${axis}.1R-"
+done
+/eu/phymotion/wait
+pos=$(/eu/phymotion/gpos)
+echo " --- homed "

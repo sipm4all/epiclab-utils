@@ -1,0 +1,5 @@
+#! /usr/bin/env bash
+
+for axis in 1 2; do
+    /eu/phymotion/cmd "${axis}.1MD"
+done

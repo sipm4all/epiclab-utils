@@ -1,0 +1,11 @@
+#! /usr/bin/env bash
+
+ADDRESS="10.0.8.16"
+
+if [ $# -ne 1 ]; then
+    echo " usage: $0 [command] "
+    exit 1
+fi
+cmd=$1
+
+/eu/phymotion/cmd.py --address ${ADDRESS} --cmd ${cmd}

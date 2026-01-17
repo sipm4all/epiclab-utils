@@ -1,5 +1,5 @@
 #! /usr/bin/env bash
 
 for axis in 1 2; do
-    /au/phymotion/cmd "${axis}.1MA"
+    /eu/phymotion/cmd "${axis}.1MA"
 done
